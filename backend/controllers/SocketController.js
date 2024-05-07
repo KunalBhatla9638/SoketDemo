@@ -29,6 +29,7 @@
 
 let users = [];
 let count = 1;
+const messages = {};
 
 function initializeSocket(io) {
   io.on("connection", (socket) => {
@@ -56,22 +57,25 @@ function initializeSocket(io) {
     //   io.to([from, to]).emit("recieved-message", data);
     // });
 
-    const messages = {};
     socket.on("message", (data) => {
+      // const { from, message, to, id, messages } = data;
       const { from, message, to, id } = data;
-      console.log("data --> ", data);
 
       const senderID = users.find((item) => socket.id === item.socketID);
       console.log("Sender ID:", senderID.id);
 
-      // Check if the sender's ID already exists in the messages object
-      if (!messages[senderID.id]) {
-        // If not, create an empty array for the sender's ID
-        messages[senderID.id] = [];
+      if (messages != undefined) {
+        if (!messages[senderID.id]) {
+          // console.log('Inside if --> ', messages)
+          messages[senderID.id] = [];
+        }
+        messages[senderID.id].push({ id, from, message, to });
       }
 
-      // Push the new message object to the array corresponding to the sender's ID
-      messages[senderID.id].push({ id, from, message, to });
+      data.messages = messages
+      console.log('data to be send -->', data);
+
+      // console.log("Messages obj---->", data.messages)
 
       // console.log("Messages Object:", messages);
 
@@ -91,10 +95,15 @@ function initializeSocket(io) {
     socket.on("disconnect", () => {
       console.log("User disconnected --->", socket.id);
       const userIdx = users.findIndex((item) => item.socketID == socket.id);
+      console.log('disconnected user index --> ', userIdx)
       if (userIdx != -1) {
         count--;
+        console.log('USER OBJECT : ', users[userIdx].id)
+        delete messages[users[userIdx].id]
         users.splice(userIdx, 1);
       }
+      // console.log("disconnected message arrray --> ", messages)
+
       //   console.log(userIdx)
     });
   });

@@ -28,7 +28,8 @@ const HomePage = () => {
     socket.on("recieved-message", (data) => {
       console.log(data);
       data.sender = data.from == socket.id ? "user" : "contact";
-      setMessageList((message) => [...message, data]);
+      setMessageList((message) => [...message, data.messages]);
+      console.log('messagelist===', messageList)
     });
 
     // New ONE
@@ -50,66 +51,72 @@ const HomePage = () => {
     });
   }, []);
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    setDisplayTalkFormCard(false);
-    setMessage("");
-    socket.emit("message", { message, from: socketId, to: sid });
-  };
-
-  const handleTalkClick = (id, sid, user, obj) => {
-    console.log(sid, user);
-    setSId(sid);
-    setSelectedContact(user);
-    setShowChats(true);
-    obj.userName = user;
-    setSelectedContact(obj);
-    setDisplayTalkFormCard(true);
-  };
-
-  // NEW ONE
-  // const [userID, setUserID] = useState("");
   // const handleSubmit = (e) => {
   //   e.preventDefault();
   //   setDisplayTalkFormCard(false);
   //   setMessage("");
-  //   socket.emit("message", { id: userID, message, from: socketId, to: sid });
+  //   socket.emit("message", { message, from: socketId, to: sid });
   // };
 
   // const handleTalkClick = (id, sid, user, obj) => {
-  //   console.log(obj, id, sid, user);
+  //   console.log('Information on click-->', id, sid, user, obj);
   //   setSId(sid);
-  //   setUserID(id);
-  // obj.userName = user;
-  // setSelectedContact(obj);
+  //   setSelectedContact(user);
   //   setShowChats(true);
-  //   console.log(obj);
+  //   obj.userName = user;
+  //   setSelectedContact(obj);
   //   setDisplayTalkFormCard(true);
   // };
 
-  const contacts = [
-    { id: 1, name: "John Doe" },
-    { id: 2, name: "Jane Smith" },
-    { id: 3, name: "Alice Johnson" },
-  ];
-
-  const messages = {
-    1: [
-      { id: 1, content: "Hey, how's it going?", sender: "user" },
-      { id: 2, content: "Not bad, you?", sender: "contact" },
-    ],
-    2: [
-      { id: 1, content: "Hello there!", sender: "contact" },
-      { id: 2, content: "Hi! How can I help you?", sender: "user" },
-    ],
-    3: [
-      { id: 1, content: "Hello there!", sender: "contact" },
-      { id: 1, content: "Hello there!", sender: "contact" },
-      { id: 1, content: "Hello there!", sender: "contact" },
-      { id: 1, content: "Hello there!", sender: "contact" },
-      { id: 2, content: "Hello there!", sender: "user" },
-    ],
+  // NEW ONE
+  const [userID, setUserID] = useState("");
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    setDisplayTalkFormCard(false);
+    setMessage("");
+    // if(messageList.messages == undefined){
+    //   messageList.messages = {}
+    // }
+    // console.log(messageList.messages)
+    // socket.emit("message", { id: userID, message, from: socketId, to: sid, messages : messageList.messages });
+    socket.emit("message", { id: userID, message, from: socketId, to: sid });
+    console.log('--->', messageList)
   };
+
+  const handleTalkClick = (id, sid, user, obj) => {
+    // console.log(obj, id, sid, user);
+    setSId(sid);
+    setUserID(id);
+    obj.userName = user;
+    setSelectedContact(obj);
+    setShowChats(true);
+    console.log(obj, id, sid, user);
+    setDisplayTalkFormCard(true);
+  };
+
+  // const contacts = [
+  //   { id: 1, name: "John Doe" },
+  //   { id: 2, name: "Jane Smith" },
+  //   { id: 3, name: "Alice Johnson" },
+  // ];
+
+  // const messages = {
+  //   1: [
+  //     { id: 1, content: "Hey, how's it going?", sender: "user" },
+  //     { id: 2, content: "Not bad, you?", sender: "contact" },
+  //   ],
+  //   2: [
+  //     { id: 1, content: "Hello there!", sender: "contact" },
+  //     { id: 2, content: "Hi! How can I help you?", sender: "user" },
+  //   ],
+  //   3: [
+  //     { id: 1, content: "Hello there!", sender: "contact" },
+  //     { id: 1, content: "Hello there!", sender: "contact" },
+  //     { id: 1, content: "Hello there!", sender: "contact" },
+  //     { id: 1, content: "Hello there!", sender: "contact" },
+  //     { id: 2, content: "Hello there!", sender: "user" },
+  //   ],
+  // };
 
   // const handleContactClick = (contact) => {
   //   console.log("contact --> ", contact);
@@ -165,21 +172,23 @@ const HomePage = () => {
                 : selectedContact.userName}
             </div>
             <div className="message-list">
-              {/* {messages[selectedContact.id].map((message) => {
-                console.log(message);
-                return (
-                  // <div
-                  //   key={message.id}
-                  //   className={`message ${
-                  //     message.sender === "user" ? "sent" : "received"
-                  //   }`}
-                  // >
-                  //   {message.content}
-                  // </div>
-                  <p>demo</p>
-                );
-              })} */}
-              {messageList.map((message, i) => {
+              {console.log('selected user id : ', selectedContact.id, messageList[0])}
+              {messageList[0] &&
+                messageList[0][selectedContact.id] != undefined ? messageList[0][selectedContact.id].map((message) => {
+                  console.log('item-->', message);
+                  return (
+                    <div
+                      key={message.id}
+                      className={`message ${
+                        message.sender === "user" ? "sent" : "received"
+                      }`}
+                    >
+                      {message.message}
+                    </div>
+                    // <p>demo</p>
+                  );
+                }): <h5>No communication</h5>} 
+              {/*  {messageList.map((message, i) => {
                 console.log(message);
                 return (
                   <div
@@ -191,7 +200,7 @@ const HomePage = () => {
                     {message.message}
                   </div>
                 );
-              })}
+              })} */}
             </div>
             <div className="message-input-container">
               <input
